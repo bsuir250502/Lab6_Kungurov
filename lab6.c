@@ -1,0 +1,120 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+int create_file(char *file_name)
+{
+    FILE *f;
+    int n, number = 0;
+    f = fopen(file_name, "w+");
+    puts("Enter number in file (0 - exit)");
+    while (1) {
+        scanf("%d", &n);
+        if (n == 0) {
+            break;
+        }
+        number++;
+        fprintf(f, "%3d", n);
+    }
+    fclose(f);
+    return number;
+}
+
+int create_binary_file(char *binary_file_name)
+{
+    FILE *fb;
+    int n, number = 0;
+    fb = fopen(binary_file_name, "w+b");
+    puts("Enter number in binary file (0 - exit)");
+    while (1) {
+        scanf("%d", &n);
+        if (n == 0) {
+            break;
+        }
+        number++;
+        fwrite(&n, sizeof(int), 1, fb);
+    } fclose(fb);
+    return number;
+}
+
+int *del_number(int *file, int *binary_file, int number_file,
+                int *number_bfile)
+{
+    int i, j, k;
+    for (i = 0; i < number_file; i++) {
+        for (j = 0; j < *number_bfile; j++) {
+            if (file[i] == binary_file[j]) {
+                for (k = j; k < (*number_bfile - 1); k++) {
+                    binary_file[k] = binary_file[k + 1];
+                }
+                *number_bfile -= 1;
+            }
+        }
+    }
+    return binary_file;
+}
+
+void del_from_binary(char *file_name, char *binary_file_name,
+                     int number_file, int number_bfile)
+{
+    FILE *f, *fb;
+    int *file, *binary_file, i;
+    file = (int *) calloc(number_file, sizeof(int));
+    binary_file = (int *) calloc(number_bfile, sizeof(int));
+    f = fopen(file_name, "r");
+    fb = fopen(binary_file_name, "rb");
+    for (i = 0; i < number_bfile; i++) {
+        fread(&binary_file[i], sizeof(int), 1, fb);
+        if (feof(f)) {
+            break;
+        }
+    }
+    for (i = 0; i < number_file; i++) {
+        fscanf(f, "%d", &file[i]);
+        if (feof(f)) {
+            break;
+        }
+    }
+    binary_file =
+        del_number(file, binary_file, number_file, &number_bfile);
+    fb = fopen(binary_file_name, "wb");
+    for (i = 0; i < number_bfile; i++) {
+        fwrite(&binary_file[i], sizeof(int), 1, fb);
+    } fclose(fb);
+} int main(int argc, char **argv)
+{
+    char *file_name, *binary_file_name;
+    FILE *fb;
+    int n, number_file, number_bfile;
+    if (argc == 2) {
+        if ((strcmp(argv[1], "-h")) == 0) {
+            puts("Instructions for use:");
+            puts("1. Open file:");
+            puts("    gcc-Wall-Wextra-o lab6.exe lab6.c ");
+            puts("    ./lab6.exe name_text_file name_binary_file");
+            puts("2.Enter the number to a text file (if you want to complete the entry,enter '0').");
+            puts("    Then enter the number into a binary file (as '0'to complete the entry.)");
+            puts("3.The screen you will see the contents of a binary file, after removal from the");
+            puts("    It properties, present in the text.");
+            return 0;
+        }
+    }
+    file_name = (char *) calloc(10, sizeof(char));
+    binary_file_name = (char *) calloc(10, sizeof(char));
+    if (argc == 3) {
+        strcpy(file_name, argv[1]);
+        strcpy(binary_file_name, argv[2]);
+    }
+    number_file = create_file(file_name);
+    number_bfile = create_binary_file(binary_file_name);
+    fb = fopen(binary_file_name, "rb");
+    del_from_binary(file_name, binary_file_name, number_file,
+                    number_bfile);
+    while (1) {
+        fread(&n, sizeof(int), 1, fb);
+        if (feof(fb)) {
+            break;
+        }
+        printf("%3d", n);
+    }
+    return 0;
+}
