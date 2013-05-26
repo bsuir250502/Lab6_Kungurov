@@ -66,7 +66,7 @@ void del_from_binary(char *file_name, char *binary_file_name,
         fread(&binary_file[i], sizeof(int), 1, fb);
         if (feof(f)) {
             break;
-        }
+        } 
     }
     for (i = 0; i < number_file; i++) {
         fscanf(f, "%d", &file[i]);
@@ -80,7 +80,11 @@ void del_from_binary(char *file_name, char *binary_file_name,
     for (i = 0; i < number_bfile; i++) {
         fwrite(&binary_file[i], sizeof(int), 1, fb);
     } fclose(fb);
-} int main(int argc, char **argv)
+    free(file);
+    free(binary_file);
+} 
+
+int main(int argc, char **argv)
 {
     char *file_name, *binary_file_name;
     FILE *fb;
@@ -116,5 +120,7 @@ void del_from_binary(char *file_name, char *binary_file_name,
         }
         printf("%3d", n);
     }
+    free(file_name);
+    free(binary_file_name);
     return 0;
 }
